@@ -1,2 +1,2 @@
-# skrypty_sieci
+# Skrypty z sieci
 Skrypty z sieci
