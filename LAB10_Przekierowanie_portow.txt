@@ -1,0 +1,54 @@
+############################################
+# KONFIGURACJA ROUTERA – PRZEKIEROWANIE PORTÓW
+############################################
+
+############################################
+# WAN – Internet (ether1)
+############################################
+# Pobieranie adresu IP z DHCP od dostawcy
+/ip dhcp-client
+add interface=ether1 disabled=no
+
+############################################
+# NAT – dostęp do Internetu dla sieci LAN
+############################################
+# Maskarada dla ruchu wychodzącego do Internetu
+/ip firewall nat
+add chain=srcnat src-address=10.0.0.0/24 out-interface=ether1 action=masquerade
+
+############################################
+# LAN – sieć lokalna użytkowników (ether2)
+############################################
+# Adres IP routera w sieci LAN
+/ip address
+add address=10.0.0.1/24 interface=ether2 network=10.0.0.0
+
+############################################
+# DHCP – automatyczna konfiguracja klientów LAN
+############################################
+# Pula adresów DHCP
+/ip pool
+add name=dhcp ranges=10.0.0.100-10.0.0.150
+
+# Serwer DHCP na interfejsie LAN
+/ip dhcp-server
+add name=LAN interface=ether2 address-pool=dhcp disabled=no
+
+# Parametry sieci DHCP
+/ip dhcp-server network
+add address=10.0.0.0/24 gateway=10.0.0.1 dns-server=8.8.8.8
+
+############################################
+# SIEĆ SERWEROWA (ether3)
+############################################
+# Adres IP routera w sieci serwerów
+/ip address
+add address=10.0.10.1/24 interface=ether3 network=10.0.10.0
+
+############################################
+# DST-NAT – przekierowanie portu HTTP
+############################################
+# Przekierowanie ruchu z portu 80 na serwer wewnętrzny
+/ip firewall nat
+add chain=dstnat in-interface=ether1 protocol=tcp dst-port=80 \
+    action=dst-nat to-addresses=10.0.10.2

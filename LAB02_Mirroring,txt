@@ -1,0 +1,9 @@
+#Bridge
+interface/bridge/port/add interface=ether1 bridge=LAN
+interface/bridge/port/add interface=ether2 bridge=LAN 
+interface/bridge/port/add interface=ether3 bridge=LAN #WWW
+#Mirroring:
+interface/ethernet/switch/rule mirror=yes
+interface/ethernet/mirror-source=ether1 mirror-target=ether2 
+interface/ethernet/
+interface/ethernet/switch/port mirror-ingress=yes
