@@ -1,0 +1,48 @@
+############################################
+# KONFIGURACJA ROUTERA R3                 #
+############################################
+
+# ============================================
+# 1. KONFIGURACJA ADRESÓW IP
+# ============================================
+/ip/address
+# Przypisanie adresu IP 192.168.13.3/24 do interfejsu ether1
+add interface=ether1 address=192.168.13.3/24
+# Przypisanie adresu IP 3.3.3.1/24 do interfejsu ether2
+add interface=ether2 address=3.3.3.1/24
+
+# ============================================
+# 2. KONFIGURACJA SERWERA DHCP
+# ============================================
+/ip/pool
+# Utworzenie puli adresów DHCP o nazwie "pool10" z zakresem 3.3.3.100-3.3.3.150
+add name=pool10 ranges=3.3.3.100-3.3.3.150
+
+/ip/dhcp-server/network
+# Konfiguracja sieci DHCP: 3.3.3.0/24 z bramą 3.3.3.1
+add address=3.3.3.0/24 gateway=3.3.3.1
+
+/ip/dhcp-server
+# Utworzenie serwera DHCP o nazwie "dhcp10" na interfejsie ether2 z pulą "pool10"
+add name=dhcp10 interface=ether2 address-pool=pool10
+
+# ============================================
+# 3. KONFIGURACJA OSPF
+# ============================================
+/routing/ospf/instance
+# Utworzenie instancji OSPF v2 o nazwie "v2inst" z router-ID 1.0.0.3
+add name=v2inst version=2 router-id=1.0.0.3
+
+/routing/ospf/area
+# Utworzenie obszaru area1 (1.1.1.1) dla instancji v2inst
+add name=area1 area-id=1.1.1.1 instance=v2inst
+
+/routing/ospf/interface-template
+# Przypisanie sieci 192.168.13.0/24 do obszaru area1
+add networks=192.168.13.0/24 area=area1
+# Przypisanie sieci 3.3.3.0/24 do obszaru area1
+add networks=3.3.3.0/24 area=area1
+
+############################################
+# KONIEC KONFIGURACJI R3                  #
+############################################

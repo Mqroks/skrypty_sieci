@@ -1,0 +1,48 @@
+############################################
+# KONFIGURACJA ROUTERA R4                 #
+############################################
+
+# ============================================
+# 1. KONFIGURACJA ADRESÓW IP
+# ============================================
+/ip/address
+# Przypisanie adresu IP 192.168.24.4/24 do interfejsu ether1
+add interface=ether1 address=192.168.24.4/24
+# Przypisanie adresu IP 4.4.4.1/24 do interfejsu ether2
+add interface=ether2 address=4.4.4.1/24
+
+# ============================================
+# 2. KONFIGURACJA SERWERA DHCP
+# ============================================
+/ip/pool
+# Utworzenie puli adresów DHCP o nazwie "pool10" z zakresem 4.4.4.100-4.4.4.200
+add name=pool10 ranges=4.4.4.100-4.4.4.200
+
+/ip/dhcp-server/network
+# Konfiguracja sieci DHCP: 4.4.4.0/24 z bramą 4.4.4.1
+add address=4.4.4.0/24 gateway=4.4.4.1
+
+/ip/dhcp-server
+# Utworzenie serwera DHCP o nazwie "dhcp10" na interfejsie ether2 z pulą "pool10"
+add name=dhcp10 interface=ether2 address-pool=pool10
+
+# ============================================
+# 3. KONFIGURACJA OSPF
+# ============================================
+/routing/ospf/instance
+# Utworzenie instancji OSPF v2 o nazwie "v2inst" z router-ID 1.0.0.4
+add name=v2inst version=2 router-id=1.0.0.4
+
+/routing/ospf/area
+# Utworzenie obszaru area2 (2.2.2.2) dla instancji v2inst
+add name=area2 area-id=2.2.2.2 instance=v2inst
+
+/routing/ospf/interface-template
+# Przypisanie sieci 192.168.24.0/24 do obszaru area2
+add networks=192.168.24.0/24 area=area2
+# Przypisanie sieci 4.4.4.0/24 do obszaru area2
+add networks=4.4.4.0/24 area=area2
+
+############################################
+# KONIEC KONFIGURACJI R4                  #
+############################################

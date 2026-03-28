@@ -1,0 +1,35 @@
+############################################
+# KONFIGURACJA ROUTERA R1                 #
+############################################
+
+# ============================================
+# 1. KONFIGURACJA ADRESÓW IP
+# ============================================
+/ip/address
+# Przypisanie adresu IP 192.168.13.1/24 do interfejsu ether2
+add interface=ether2 address=192.168.13.1/24
+# Przypisanie adresu IP 192.168.12.1/24 do interfejsu ether1
+add interface=ether1 address=192.168.12.1/24
+
+# ============================================
+# 2. KONFIGURACJA OSPF
+# ============================================
+/routing/ospf/instance
+# Utworzenie instancji OSPF v2 o nazwie "v2inst" z router-ID 1.0.0.1
+add name=v2inst version=2 router-id=1.0.0.1
+
+/routing/ospf/area
+# Utworzenie obszaru backbone (area 0.0.0.0) dla instancji v2inst
+add name=area0 area-id=0.0.0.0 instance=v2inst
+# Utworzenie obszaru area1 (1.1.1.1) dla instancji v2inst
+add name=area1 area-id=1.1.1.1 instance=v2inst
+
+/routing/ospf/interface-template
+# Przypisanie sieci 192.168.12.0/24 do obszaru backbone (area0)
+add networks=192.168.12.0/24 area=area0
+# Przypisanie sieci 192.168.13.0/24 do obszaru area1
+add networks=192.168.13.0/24 area=area1
+
+############################################
+# KONIEC KONFIGURACJI R1                  #
+############################################
