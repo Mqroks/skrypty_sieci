@@ -1,0 +1,53 @@
+############################################
+# KONFIGURACJA R3 - MikroTik RouterOS     #
+############################################
+
+# ============================================
+# 1. KONFIGURACJA ADRESÓW IP NA INTERFEJSACH
+# ============================================
+/ip/address
+# ether1 - sieć LAN lokalna
+add interface=ether1 address=192.168.30.1/24
+# ether2 - łącze do routera R1
+add interface=ether2 address=172.16.20.2/24
+# ether3 - łącze do routera R2
+add interface=ether3 address=172.16.30.2/24
+
+# ============================================
+# 2. KONFIGURACJA DHCP DLA SIECI LAN
+# ============================================
+/ip/pool
+# Definicja puli adresów DHCP
+add name=pool10 ranges=192.168.30.100-192.168.30.200
+
+/ip/dhcp-server/network
+# Konfiguracja sieci DHCP
+add address=192.168.30.0/24 gateway=192.168.30.1
+
+/ip/dhcp-server 
+# Uruchomienie serwera DHCP na interfejsie ether1
+add name=dhcp10 interface=ether1 address-pool=pool10
+
+# ============================================
+# 3. KONFIGURACJA OSPF v2
+# ============================================
+/routing/ospf/instance
+# Utworzenie instancji OSPF w wersji 2
+add name=v2inst version=2 router-id=1.0.0.3
+
+/routing/ospf/area
+# Utworzenie obszaru OSPF (backbone area 0)
+add name=area1 area-id=0.0.0.0 instance=v2inst
+
+/routing/ospf/interface-template
+# Ogłaszanie sieci w OSPF:
+# Sieć LAN lokalna
+add networks=192.168.30.0/24 area=area1
+# Sieć łącząca z R1
+add networks=172.16.20.0/24 area=area1
+# Sieć łącząca z R2
+add networks=172.16.30.0/24 area=area1
+
+############################################
+# KONIEC KONFIGURACJI R3                  #
+############################################
