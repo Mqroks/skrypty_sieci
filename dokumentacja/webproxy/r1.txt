@@ -1,0 +1,25 @@
+
+/interface/bridge
+
+add name=bridge pvid=1 protocol-mode=none 
+
+/interface/bridge/port
+
+add interface=ether2 bridge=bridge pvid=1
+
+add interface=ether3 bridge=bridge pvid=1
+
+/ip/dhcp-client/ add interface=ether1
+
+/ip/address/ add interface=bridge address=172.16.10.1/24
+/ip/proxy/ set enabled=yes
+
+/ip/proxy reset-html 
+y
+
+/ip/firewall/nat/ add chain=srcnat out-interface=ether1 action=masquerade
+
+/ip/firewall/nat/ add chain=dstnat protocol=6 dst-port=80 action=redirect to-ports=8080
+
+/ip/proxy/access/ add src-address=172.16.10.0/24 dst-host=www.wp.pl action=deny
+
