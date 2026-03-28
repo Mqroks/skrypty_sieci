@@ -1,0 +1,27 @@
+##############################################
+# Tworzenie bridge z obsługą VLAN
+##############################################
+/interface/bridge
+add name=bridge pvid=1 protocol-mode=none vlan-filtering=yes
+
+
+##############################################
+# Przypisanie portów do VLAN
+# ether1 = trunk
+# ether2 = access VLAN10
+# ether3 = access VLAN20
+##############################################
+/interface/bridge/port
+add interface=ether1 bridge=bridge pvid=1
+add interface=ether2 bridge=bridge pvid=10
+add interface=ether3 bridge=bridge pvid=20
+
+
+##############################################
+# Definicje VLAN-ów w bridge
+# VLAN10 – untagged na ether2 / tagged na ether1
+# VLAN20 – untagged na ether3 / tagged na ether1
+##############################################
+/interface/bridge/vlan 
+add bridge=bridge vlan-ids=10 tagged=ether1 untagged=ether2
+add bridge=bridge vlan-ids=20 tagged=ether1 untagged=ether3

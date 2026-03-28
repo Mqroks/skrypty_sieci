@@ -1,0 +1,56 @@
+##############################################
+# WAN – pobieranie adresu IP z internetu
+##############################################
+/ip/dhcp-client
+add interface=ether1
+
+
+##############################################
+# VLAN + IP (router = gateway dla sieci)
+# VLAN10 = 192.168.10.1/24
+# VLAN20 = 192.168.20.1/24
+##############################################
+/interface/vlan 
+add name=vl10 interface=ether2 vlan-id=10
+add name=vl20 interface=ether2 vlan-id=20
+
+/ip/address
+add interface=vl10 address=192.168.10.1/24
+add interface=vl20 address=192.168.20.1/24
+
+
+##############################################
+# DHCP Server – rozdawanie adresów IP
+##############################################
+/ip/pool
+add name=pool10 ranges=192.168.10.100-192.168.10.200
+add name=pool20 ranges=192.168.20.100-192.168.20.200
+
+/ip/dhcp-server/network
+add address=192.168.10.0/24 gateway=192.168.10.1 dns-server=8.8.8.8
+add address=192.168.20.0/24 gateway=192.168.20.1 dns-server=8.8.8.8
+
+/ip/dhcp-server 
+add name=dhcp10 interface=vl10 address-pool=pool10
+add name=dhcp20 interface=vl20 address-pool=pool20
+
+
+##############################################
+# NAT – dostęp do internetu dla LAN/VLAN
+##############################################
+/ip/firewall/nat
+add chain=srcnat out-interface=ether1 action=masquerade
+
+
+##############################################
+# Port panelu WWW routera — WebFig na :800
+##############################################
+/ip/service/set www port=800
+
+
+##############################################
+# Opcjonalnie — przekierowanie portu 80
+# (aktywujesz odkomentowując linię)
+##############################################
+#add chain=dstnat protocol=tcp dst-port=80 in-interface=ether1 \
+#action=dst-nat to-addresses=10.0.0.2 to-ports=80
