@@ -1,0 +1,32 @@
+############################################
+# KONFIGURACJA BRIDGE (MOST)              #
+############################################
+
+# ============================================
+# 1. UTWORZENIE BRIDGE'A (MOSTU)
+# ============================================
+/interface/bridge
+# Tworzenie bridge'a o nazwie "bridge"
+# - pvid=1: domyślny VLAN ID dla portów (VLAN 1)
+# - protocol-mode=none: wyłączenie protokołów mostowania (STP/RSTP)
+#   (przydatne w prostych konfiguracjach bez potrzeby zabezpieczeń przed pętlami)
+add name=bridge pvid=1 protocol-mode=none 
+
+# ============================================
+# 2. DODANIE PORTÓW DO BRIDGE'A
+# ============================================
+/interface/bridge/port
+# Dodanie interfejsu ether1 do bridge'a:
+# - bridge=bridge: przypisanie do bridge'a "bridge"
+# - pvid=1: oznaczenie ramek bez tagu VLAN jako należące do VLAN 1
+add interface=ether1 bridge=bridge pvid=1
+
+# Dodanie interfejsu ether2 do bridge'a
+add interface=ether2 bridge=bridge pvid=1
+
+# Dodanie interfejsu ether3 do bridge'a
+add interface=ether3 bridge=bridge pvid=1
+
+############################################
+# KONIEC KONFIGURACJI BRIDGE              #
+############################################
