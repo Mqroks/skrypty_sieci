@@ -1,0 +1,8 @@
+/ip/dhcp-client/ add interface=ether1
+/ip/address/ add interface=ether3 address=192.168.20.1/24
+/ip/pool/ add name=dhcp_pool ranges=192.168.20.2-192.168.20.254
+/ip/dhcp-server/ add name=dhcp1 interface=ether3 address-pool=dhcp_pool
+/ip/firewall/nat/ add chain=srcnat out-interface=ether1 action=masquerade
+/interface/gre/ add name=gre-tunel local-address=70.70.70.1 remote-address=80.80.80.1 ipsec-secret=Haslo12345 allow-fast-path=no
+/ip/address/ add address=10.10.10.2/24 interface=gre-tunel
+/ip/route/ add dst-address=192.168.10.0/24 gateway=10.10.10.1
