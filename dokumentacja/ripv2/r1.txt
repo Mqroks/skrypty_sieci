@@ -1,0 +1,9 @@
+/ip/address/ add address=172.16.10.1/24 interface=ether3
+/ip/address/ add address=172.16.20.2/24 interface=ether2
+/ip/address/ add address=192.168.10.1/24 interface=ether1
+/ip/pool/ add name=dhcp_pool ranges=192.168.10.2-192.168.10.254
+/ip/dhcp-server/ add name=dhcp1 interface=ether3 address-pool=dhcp_pool
+/routing/rip/instance/ add name=RIPv2
+/routing/rip/interface-template/ add instance=RIPv2 interfaces=ether1 source-addresses=192.168.10.0 cost=1
+/routing/rip/interface-template/ add instance=RIPv2 interfaces=ether1 source-addresses=172.16.20.0 cost=1
+/routing/rip/interface-template/ add instance=RIPv2 interfaces=ether1 source-addresses=172.16.10.0 cost=1
