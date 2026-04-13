@@ -1,0 +1,17 @@
+#POSTAWOWY CONFIG
+#DHCP z sali
+ip dhcp-client/add interface=ether1 use-peer-dns=yes use-peer-ntp=yes add-defa
+ult-route=yes
+#NAT
+ip firewall/nat/add action=masquerade chain=srcnat out-interface=ether1
+#Przypisanie adresu do interfejsu ether2
+ ip address/add interface=ether2 address=192.168.2.1/24
+#DHCP
+ ip pool/add name=dhcp1 ranges=192.168.2.10-192.168.2.100  
+ ip dhcp-server/network/add  address=192.168.2.0/24 gateway=192.168.2.1 dns-ser
+ver=8.8.8.8
+ ip dhcp-server/add name=DHCP interface=ether2 address-pool=dhcp1
+#Blokada strony
+ip firewall/layer7-protocol/add name=Blokada_ZSL regexp=https://tl.krakow.pl/
+ip firewall/filter/add chain=forward protocol=tcp dst-port=443 layer7-protocol
+=Blokada_ZSL action=drop
