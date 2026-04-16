@@ -1,9 +1,35 @@
-/ip/address/ add address=172.16.10.1/24 interface=ether3
-/ip/address/ add address=172.16.20.2/24 interface=ether2
+############################################
+# KONFIGURACJA ROUTERA R1                  #
+############################################
+
+# ============================================
+# 1. ADRESACJA IP INTERFEJSÓW
+# ============================================
+# Adres IP dla sieci LAN (lokalnej) na porcie ether1
 /ip/address/ add address=192.168.10.1/24 interface=ether1
+
+# Adres IP dla połączenia z Routerem R3 na porcie ether2
+/ip/address/ add address=172.16.20.2/24 interface=ether2
+
+# Adres IP dla połączenia z Routerem R2 na porcie ether3
+/ip/address/ add address=172.16.10.1/24 interface=ether3
+
+# ============================================
+# 2. KONFIGURACJA SERWERA DHCP (DLA LAN)
+# ============================================
+# Utworzenie puli adresów dla urządzeń w sieci lokalnej (od .2 do .254)
 /ip/pool/ add name=dhcp_pool ranges=192.168.10.2-192.168.10.254
-/ip/dhcp-server/ add name=dhcp1 interface=ether3 address-pool=dhcp_pool
-/routing/rip/instance/ add name=RIPv2
+
+# Uruchomienie serwera DHCP na interfejsie ether1 korzystającego z powyższej puli
+/ip/dhcp-server/ add name=dhcp1 interface=ether1 address-pool=dhcp_pool
+
+# ============================================
+# 3. ROUTING DYNAMICZNY RIPv2
+# ============================================
+# Utworzenie instancji protokołu RIP i włączenie rozgłaszania sieci bezpośrednich
+/routing/rip/instance/ add name=RIPv2 redistribute=connected
+
+# Szablony interfejsów - określenie, na których portach ma działać protokół RIP:
 /routing/rip/interface-template/ add instance=RIPv2 interfaces=ether1 source-addresses=192.168.10.0 cost=1
-/routing/rip/interface-template/ add instance=RIPv2 interfaces=ether1 source-addresses=172.16.20.0 cost=1
-/routing/rip/interface-template/ add instance=RIPv2 interfaces=ether1 source-addresses=172.16.10.0 cost=1
+/routing/rip/interface-template/ add instance=RIPv2 interfaces=ether2 source-addresses=172.16.20.0 cost=1
+/routing/rip/interface-template/ add instance=RIPv2 interfaces=ether3 source-addresses=172.16.10.0 cost=1
