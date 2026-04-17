@@ -1,5 +1,45 @@
+############################################
+# KONFIGURACJA PRZEŁĄCZNIKA (VLAN TRUNKING)#
+############################################
+
+# ============================================
+# 1. TWORZENIE MOSTU Z OBSŁUGĄ VLAN
+# ============================================
+# Utworzenie mostu o nazwie bridge1[cite: 4, 5].
+# - vlan-filtering=yes: KLUCZOWE – aktywuje sprzętowe filtrowanie VLAN, 
+#   co pozwala na izolację ruchu między podsieciami[cite: 4, 5].
+# - protocol-mode=none: wyłączenie STP/RSTP[cite: 4, 5].
+/interface/bridge/ add name=bridge1 protocol-mode=none vlan-filtering=yes 
+
+# ============================================
+# 2. PRZYPISANIE PORTÓW DO BRIDGE I PVID
+# ============================================
+# Określenie, do którego VLAN-u należy dany port domyślnie (PVID):
+# - ether1: PVID=1 (często używany jako port magistralny / trunk)[cite: 4, 5].
+# - ether2: PVID=20 (port dostępowy dla urządzeń z VLAN 20)[cite: 4, 5].
+# - ether3: PVID=30 (port dostępowy dla urządzeń z VLAN 30)[cite: 4, 5].
 /interface/bridge/port/ add interface=ether1 bridge=bridge1 pvid=1
 /interface/bridge/port/ add interface=ether2 bridge=bridge1 pvid=20
 /interface/bridge/port/ add interface=ether3 bridge=bridge1 pvid=30
+
+# ============================================
+# 3. DEFINICJA TRASOWANIA VLAN (TAGOWANIE)
+# ============================================
+# Ta sekcja decyduje, gdzie ruch ma być "otagowany" (Trunk), a gdzie "odtagowany" (Access).
+
+# VLAN 20:
+# - tagged=ether1: ruch z VLAN 20 wychodzi portem ether1 z tagiem (idzie do routera/innego switcha)[cite: 4, 5].
+# - untagged=ether2: ruch z VLAN 20 trafia do ether2 bez tagu (podłączasz tam np. zwykły komputer)[cite: 4, 5].
 /interface/bridge/vlan/ add bridge=bridge1 vlan-ids=20 tagged=ether1 untagged=ether2
+
+# VLAN 30:
+# - tagged=ether1: analogicznie, ether1 przesyła tagi VLAN 30[cite: 4, 5].
+# - untagged=ether3: port dostępowy dla urządzeń w sieci VLAN 30[cite: 4, 5].
 /interface/bridge/vlan/ add bridge=bridge1 vlan-ids=30 tagged=ether1 untagged=ether3
+
+############################################
+# PODSUMOWANIE DZIAŁANIA                   #
+############################################
+# Port ether1 działa jako TRUNK (przesyła VLAN 20 i 30 do góry).
+# Port ether2 to ACCESS dla VLAN 20.
+# Port ether3 to ACCESS dla VLAN 30.
