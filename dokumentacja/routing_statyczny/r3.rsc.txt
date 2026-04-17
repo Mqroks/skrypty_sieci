@@ -11,15 +11,15 @@
 # - R3 pełni rolę bramy domyślnej dla tej sieci
 add interface=ether1 address=192.168.30.1/24
 
-# Przypisanie adresu IP do interfejsu ether2:
+# Przypisanie adresu IP do interfejsu ether3:
 # - Łącze WAN między R3 a R2 (sieć 172.16.30.0/24)
 # - R3 ma adres .1, R2 ma adres .2
-add interface=ether2 address=172.16.30.1/24
+add interface=ether3 address=172.16.30.1/24
 
-# Przypisanie adresu IP do interfejsu ether3:
+# Przypisanie adresu IP do interfejsu ether2:
 # - Łącze WAN między R3 a R1 (sieć 172.16.20.0/24)
 # - R3 ma adres .1, R1 ma adres .2
-add interface=ether3 address=172.16.20.1/24
+add interface=ether2 address=172.16.20.1/24
 
 # ============================================
 # 2. PULA ADRESÓW DHCP
