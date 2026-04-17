@@ -1,24 +1,56 @@
-/interface/bridge
+############################################
+# KONFIGURACJA MIROTIC: BRIDGE, NAT, PROXY #
+############################################
 
+# ============================================
+# 1. KONFIGURACJA BRIDGE (MOSTU)
+# ============================================
+/interface/bridge
+# Tworzenie wirtualnego mostu o nazwie "bridge".
+# - protocol-mode=none: wyłączenie protokołów zapobiegających pętlom (STP).
 add name=bridge pvid=1 protocol-mode=none 
 
 /interface/bridge/port
-
+# Dodanie fizycznych portów ether2 i ether3 do wspólnego mostu.
+# Urządzenia wpięte do tych portów będą w tej samej sieci warstwy 2.
 add interface=ether2 bridge=bridge pvid=1
-
 add interface=ether3 bridge=bridge pvid=1
 
+# ============================================
+# 2. KONFIGURACJA INTERFEJSU WAN (INTERNET)
+# ============================================
+# Uruchomienie klienta DHCP na ether1, aby router pobrał adres IP od dostawcy internetu.
 /ip/dhcp-client/ add interface=ether1
 
+# ============================================
+# 3. ADRESACJA LOKALNA (LAN)
+# ============================================
+# Przypisanie adresu IP do interfejsu bridge (brama dla sieci lokalnej).
 /ip/address/ add interface=bridge address=172.16.10.1/24
+
+# ============================================
+# 4. FIREWALL I NAT (UDOSTĘPNIANIE INTERNETU)
+# ============================================
+# Maskarada: pozwala urządzeniom z sieci lokalnej korzystać z internetu przez ether1.
+/ip/firewall/nat/ add chain=srcnat out-interface=ether1 action=masquerade
+
+# Przekierowanie ruchu WWW (port 80) na port serwera Proxy (8080).
+# Jest to tzw. Transparent Proxy (użytkownik nie musi go ustawiać w przeglądarce).
+/ip/firewall/nat/ add chain=dstnat protocol=6 dst-port=80 action=redirect to-ports=8080
+
+# ============================================
+# 5. KONFIGURACJA WEB PROXY
+# ============================================
+# Włączenie usługi serwera Proxy.
 /ip/proxy/ set enabled=yes
 
+# Resetowanie plików HTML proxy do ustawień domyślnych (np. strony z błędem).
 /ip/proxy reset-html 
 y
 
-/ip/firewall/nat/ add chain=srcnat out-interface=ether1 action=masquerade
+# Reguła blokady: zakaz wejścia na stronę zse.krakow.pl dla sieci 172.16.10.0/24.
+/ip/proxy/access/ add src-address=172.16.10.0/24 dst-host=zse.krakow.pl action=deny
 
-/ip/firewall/nat/ add chain=dstnat protocol=6 dst-port=80 action=redirect to-ports=8080
-
-/ip/proxy/access/ add src-address=172.16.10.0/24 dst-host=www.wp.pl action=deny
-
+############################################
+# KONIEC OPISU                             #
+############################################
