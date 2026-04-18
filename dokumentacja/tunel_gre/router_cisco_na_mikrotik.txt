@@ -1,8 +1,25 @@
-#/ip/dhcp-client/ add interface=ether1
-/ip/address/ add interface=ether3 address=80.80.80.1/24
-/ip/pool/ add name=dhcp_pool ranges=80.80.80.100-80.80.80.200
-/ip/dhcp-server/ add name=dhcp interface=ether3 address-pool=dhcp_pool
-#/ip/firewall/nat/ add chain=srcnat out-interface=ether1 action=masquerade
-/ip/address/ add interface=ether2 address=70.70.70.1/24
-/ip/pool/ add name=dhcp_pool2 ranges=70.70.70.100-70.70.70.200
-/ip/dhcp-server/ add name=dhcp2 interface=ether2 address-pool=dhcp_pool2
+################################################
+# KONFIGURACJA WĘZŁA CENTRALNEGO (ISP/INTERNET)#
+################################################
+
+# ==============================================
+# 1. KONFIGURACJA INTERFEJSU ETHER3 (Link do R1)
+# ==============================================
+# Przypisanie publicznego adresu IP na porcie ether3.
+/ip/address/ add interface=ether3 address=80.80.80.80/24 
+# Pula adresu dla routera R1 (tylko jeden konkretny adres).
+/ip/pool/ add name=dhcp_pool ranges=80.80.80.1-80.80.80.1 
+# Serwer DHCP przydzielający adres dla R1.
+/ip/dhcp-server/ add name=dhcp interface=ether3 address-pool=dhcp_pool 
+/ip/dhcp-server/network/ add address=80.80.80.0/24 gateway=80.80.80.80 
+
+# ==============================================
+# 2. KONFIGURACJA INTERFEJSU ETHER2 (Link do R2)
+# ==============================================
+# Przypisanie publicznego adresu IP na porcie ether2.
+/ip/address/ add interface=ether2 address=70.70.70.70/24 
+# Pula adresu dla routera R2.
+/ip/pool/ add name=dhcp_pool2 ranges=70.70.70.1-70.70.70.1 
+# Serwer DHCP przydzielający adres dla R2.
+/ip/dhcp-server/ add name=dhcp2 interface=ether2 address-pool=dhcp_pool2 
+/ip/dhcp-server/network/ add address=70.70.70.0/24 gateway=70.70.70.70
