@@ -1,0 +1,38 @@
+#Adres z zewnątrz
+ip dhcp-client/add interface=ether4
+
+
+#Adres interfejsu
+ip address/add interface=ether2 address=192.168.10.1/24
+
+
+#konfiguracja dhcp
+ip pool/add name=LAN ranges=192.168.10.100-192.168.10.150
+ip dhcp-server/network add address=192.168.10.0/24 gateway=192.168.10.1 dns-server=8.8.8.8
+ip dhcp-server/ add name=LAN interface=ether2 address-pool=LAN
+
+
+#NAT
+ip firewall/nat/add chain=srcnat out-interface=ether4 action=masquerade 
+
+
+#Pool dla VPN
+ip pool/add name=VPN ranges=172.16.0.10-172.16.0.100
+
+
+#Odpalenie l2tp
+interface/l2tp-server/server/set enabled=yes
+
+
+#Profile
+ppp/profile/set default-encryption   local-address=172.16.0.1  remote-address=VPN
+
+
+#Secret
+ppp/secret/add name=tester password=12345 profile=default-encryption   
+
+
+#firewall
+ip firewall/filter/add chain=input protocol=udp dst-port=500 comment=L2TP-Server
+ip firewall/filter/add chain=input protocol=udp dst-port=1701 comment=L2TP-Server
+ip firewall/filter/add chain=input protocol=udp dst-port=4500 comment=L2TP-Server
