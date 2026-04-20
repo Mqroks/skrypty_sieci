@@ -1,13 +1,36 @@
-#Dodanie bridge
-interface/bridge/add name=LAN protocol-mode=none vlan-filtering=yes 
+############################################
+# KONFIGURACJA SWITCHA L2 - MikroTik RouterOS
+############################################
 
+# ============================================
+# 1. KONFIGURACJA BRIDGE Z FILTROWANIEM VLAN
+# ============================================
+/interface/bridge
+# Utworzenie mostu LAN z filtrowaniem VLAN (bez spanning tree)
+add name=LAN protocol-mode=none vlan-filtering=yes
 
-#Porty do bridge
-interface/bridge/port/add bridge=LAN interface=ether1 pvid=1
-interface/bridge/port/add bridge=LAN interface=ether2 pvid=10
-interface/bridge/port/add bridge=LAN interface=ether3 pvid=20
+# ============================================
+# 2. PORTY BRIDGE Z PRZYPISANIEM PVID
+# ============================================
+/interface/bridge/port
+# ether1 - port trunk (PVID 1, niesie wszystkie VLANy)
+add bridge=LAN interface=ether1 pvid=1
+# ether2 - port dostępowy VLAN 10
+add bridge=LAN interface=ether2 pvid=10
+# ether3 - port dostępowy VLAN 20
+add bridge=LAN interface=ether3 pvid=20
 
-#konfiguracja VLANów
-interface/bridge/vlan/add bridge=LAN vlan-ids=1 tagged=ether1,LAN  untagged=none  
-interface/bridge/vlan/add bridge=LAN vlan-ids=10 tagged=ether1 untagged=ether2
-interface/bridge/vlan/add bridge=LAN vlan-ids=20 tagged=ether1 untagged=ether3 
+# ============================================
+# 3. KONFIGURACJA VLANÓW NA BRIDGE
+# ============================================
+/interface/bridge/vlan
+# VLAN 1 - zarządzanie (tagged na ether1 i LAN)
+add bridge=LAN vlan-ids=1  tagged=ether1,LAN untagged=none
+# VLAN 10 - sieć dla ether2 (tagged na trunk, untagged na porcie dostępowym)
+add bridge=LAN vlan-ids=10 tagged=ether1     untagged=ether2
+# VLAN 20 - sieć dla ether3 (tagged na trunk, untagged na porcie dostępowym)
+add bridge=LAN vlan-ids=20 tagged=ether1     untagged=ether3
+
+############################################
+# KONIEC KONFIGURACJI                     #
+############################################ 
