@@ -1,26 +1,55 @@
-#Adres IP na zewnątrz
-ip dhcp-client/add interface=ether1
+############################################
+# KONFIGURACJA ROUTERA - MikroTik RouterOS #
+############################################
 
+# ============================================
+# 1. KONFIGURACJA ADRESU WAN
+# ============================================
+/ip/dhcp-client
+# ether1 - adres publiczny pobierany od ISP
+add interface=ether1
 
-#Maskarada
-ip firewall/nat/add action=masquerade chain=srcnat out-interface=ether1
+# ============================================
+# 2. NAT - MASKARADA DLA DOSTĘPU DO INTERNETU
+# ============================================
+/ip/firewall/nat
+# Translacja adresów dla ruchu wychodzącego przez ether1 (WAN)
+add action=masquerade chain=srcnat out-interface=ether1
 
+# ============================================
+# 3. KONFIGURACJA BRIDGE Z OBSŁUGĄ VLAN
+# ============================================
+/interface/bridge
+# Utworzenie mostu LAN z filtrowaniem VLAN (bez spanning tree)
+add name=LAN protocol-mode=none vlan-filtering=yes
 
-#Dodanie bridge
-interface/bridge/add name=LAN protocol-mode=none vlan-filtering=yes 
+/interface/bridge/port
+# Dodanie ether2 i ether3 do bridge LAN
+add bridge=LAN interface=ether2
+add bridge=LAN interface=ether3
 
+# ============================================
+# 4. KONFIGURACJA ADRESU IP NA BRIDGE
+# ============================================
+/ip/address
+# Adres IP na interfejsie bridge LAN
+add interface=LAN address=172.16.0.1/24
 
-#Porty do bridge
-interface/bridge/port/add bridge=LAN interface=ether2
-interface/bridge/port/add bridge=LAN interface=ether3
+# ============================================
+# 5. KONFIGURACJA DHCP DLA SIECI LAN
+# ============================================
+/ip/pool
+# Pula adresów dla klientów LAN
+add name=LAN ranges=172.16.0.10-172.16.0.100
 
+/ip/dhcp-server/network
+# Parametry sieci DHCP (brama i serwer DNS)
+add address=172.16.0.0/24 gateway=172.16.0.1 dns-server=8.8.8.8
 
-#Adres IP dla bridge
-ip address/add interface=LAN address=172.16.0.1/24
+/ip/dhcp-server
+# Uruchomienie serwera DHCP na interfejsie bridge LAN
+add name=LAN interface=LAN address-pool=LAN
 
-
-#DHCP na bridge
-#konfiguracja dhcp
-ip pool/add name=LAN ranges=172.16.0.10-172.16.0.100
-ip dhcp-server/network add address=172.16.0.0/24 gateway=172.16.0.1 dns-server=8.8.8.8
-ip dhcp-server/ add name=LAN interface=LAN address-pool=LAN
+############################################
+# KONIEC KONFIGURACJI                     #
+############################################
