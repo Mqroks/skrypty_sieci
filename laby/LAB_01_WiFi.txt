@@ -1,17 +1,91 @@
-#Utworzenie bridge 
-interface/bridge/add name=LAN protocol-mode=none 
-interface/bridge/port/add interface=ether2 bridge=LAN 
-#Podstawowa konfiguracja routera
-ip/dhcp-client/add interface=ether1
-ip address/add interface=LAN address=172.16.100.1/24
-#DHCP
-ip pool/add name=LAN ranges=172.16.100.10-172.16.100.150
-ip dhcp-server/network add address=172.16.100.0/24 gateway=172.16.100.1 dns-server=8.8.8.8
-ip dhcp-server/ add name=LAN interface=ether2 address-pool=LAN
-#firewall
-ip firewall/nat/add action=masquerade chain=srcnat out-interface=ether1
-#konfiguracja wi-fi
-interface/wireless/security-profiles/add name=domowe mode=dynamic-keys authentication-types=wpa2-psk unicast-ciphers=aes-ccm group-ciphers=aes-ccm wpa2-pre-shared-key=123456789 disable-pmkid=yes 
-/interface wireless set wlan1 mode=ap-bridge band=2ghz-b/g/n channel-width=20mhz frequency=2412 ssid=mikrotikon radio-name=D4CA6D683BE3 scan-list=default wireless-protocol=802.11 security-profile=domowa wps-mode=disabled frequency-mode=manual-txpower country=poland antenna-gain=0 wmm-support=disabled bridge-mode=enabled vlan-mode=no-tag vlan-id=1 default-authentication=yes default-forwarding=yes hide-ssid=no multicast-helper=default multicast-buffering=yes keepalive-frames=enabled
+############################################
+# KONFIGURACJA AP/ROUTER - MikroTik RouterOS
+############################################
 
+# ============================================
+# 1. KONFIGURACJA BRIDGE
+# ============================================
+/interface/bridge
+# Utworzenie mostu LAN (bez spanning tree)
+add name=LAN protocol-mode=none
 
+/interface/bridge/port
+# Dodanie ether2 do bridge LAN
+add interface=ether2 bridge=LAN
+
+# ============================================
+# 2. KONFIGURACJA ADRESÓW IP
+# ============================================
+/ip/dhcp-client
+# ether1 - adres publiczny pobierany od ISP
+add interface=ether1
+
+/ip/address
+# Adres IP na interfejsie bridge LAN
+add interface=LAN address=172.16.100.1/24
+
+# ============================================
+# 3. KONFIGURACJA DHCP DLA SIECI LAN
+# ============================================
+/ip/pool
+# Pula adresów dla klientów LAN
+add name=LAN ranges=172.16.100.10-172.16.100.150
+
+/ip/dhcp-server/network
+# Parametry sieci DHCP (brama i serwer DNS)
+add address=172.16.100.0/24 gateway=172.16.100.1 dns-server=8.8.8.8
+
+/ip/dhcp-server
+# Uruchomienie serwera DHCP na interfejsie ether2
+add name=LAN interface=ether2 address-pool=LAN
+
+# ============================================
+# 4. NAT - MASKARADA DLA DOSTĘPU DO INTERNETU
+# ============================================
+/ip/firewall/nat
+# Translacja adresów dla ruchu wychodzącego przez ether1 (WAN)
+add action=masquerade chain=srcnat out-interface=ether1
+
+# ============================================
+# 5. KONFIGURACJA WI-FI
+# ============================================
+/interface/wireless/security-profiles
+# Profil bezpieczeństwa WPA2-PSK z szyfrowaniem AES
+add name=domowe \
+    mode=dynamic-keys \
+    authentication-types=wpa2-psk \
+    unicast-ciphers=aes-ccm \
+    group-ciphers=aes-ccm \
+    wpa2-pre-shared-key=123456789 \
+    disable-pmkid=yes
+
+/interface/wireless
+# Konfiguracja karty wlan1 jako punkt dostępowy 2.4 GHz
+set wlan1 \
+    mode=ap-bridge \
+    band=2ghz-b/g/n \
+    channel-width=20mhz \
+    frequency=2412 \
+    ssid=mikrotikon \
+    radio-name=D4CA6D683BE3 \
+    scan-list=default \
+    wireless-protocol=802.11 \
+    security-profile=domowe \
+    wps-mode=disabled \
+    frequency-mode=manual-txpower \
+    country=poland \
+    antenna-gain=0 \
+    wmm-support=disabled \
+    bridge-mode=enabled \
+    vlan-mode=no-tag \
+    vlan-id=1 \
+    default-authentication=yes \
+    default-forwarding=yes \
+    hide-ssid=no \
+    multicast-helper=default \
+    multicast-buffering=yes \
+    keepalive-frames=enabled
+
+############################################
+# KONIEC KONFIGURACJI                     #
+############################################
