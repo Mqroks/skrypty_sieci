@@ -1,9 +1,35 @@
-#Bridge
-interface/bridge/port/add interface=ether1 bridge=LAN
-interface/bridge/port/add interface=ether2 bridge=LAN 
-interface/bridge/port/add interface=ether3 bridge=LAN #WWW
-#Mirroring:
-interface/ethernet/switch/rule mirror=yes
-interface/ethernet/mirror-source=ether1 mirror-target=ether2 
-interface/ethernet/
-interface/ethernet/switch/port mirror-ingress=yes
+############################################
+# KONFIGURACJA SWITCHA - MikroTik RouterOS #
+############################################
+
+# ============================================
+# 1. KONFIGURACJA BRIDGE (PRZEŁĄCZNIK L2)
+# ============================================
+/interface/bridge
+# Utworzenie mostu LAN
+add name=LAN
+
+/interface/bridge/port
+# Dodanie interfejsów do bridge LAN
+add interface=ether1 bridge=LAN
+add interface=ether2 bridge=LAN
+add interface=ether3 bridge=LAN
+
+# ============================================
+# 2. KONFIGURACJA PORT MIRRORING
+# ============================================
+/interface/ethernet/switch/port
+# Włączenie monitorowania ruchu przychodzącego na ether1
+set ether1 mirror-ingress=yes
+
+/interface/ethernet/switch
+# Źródło mirroringu: ether1, cel: ether2
+set mirror-source=ether1 mirror-target=ether2
+
+/interface/ethernet/switch/rule
+# Aktywacja reguły mirroringu
+add mirror=yes
+
+############################################
+# KONIEC KONFIGURACJI                     #
+############################################
