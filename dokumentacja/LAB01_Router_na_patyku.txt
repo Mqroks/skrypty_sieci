@@ -1,0 +1,26 @@
+#Adres IP na zewnątrz
+ip dhcp-client/add interface=ether1
+
+
+#Maskarada
+ip firewall/nat/add action=masquerade chain=srcnat out-interface=ether1
+
+
+#Dodanie bridge
+interface/bridge/add name=LAN protocol-mode=none vlan-filtering=yes 
+
+
+#Porty do bridge
+interface/bridge/port/add bridge=LAN interface=ether2
+interface/bridge/port/add bridge=LAN interface=ether3
+
+
+#Adres IP dla bridge
+ip address/add interface=LAN address=172.16.0.1/24
+
+
+#DHCP na bridge
+#konfiguracja dhcp
+ip pool/add name=LAN ranges=172.16.0.10-172.16.0.100
+ip dhcp-server/network add address=172.16.0.0/24 gateway=172.16.0.1 dns-server=8.8.8.8
+ip dhcp-server/ add name=LAN interface=LAN address-pool=LAN

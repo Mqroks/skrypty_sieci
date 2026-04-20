@@ -1,0 +1,35 @@
+#Adres IP na zewnątrz
+ip dhcp-client/add interface=ether1
+
+
+#Maskarada
+ip firewall/nat/add action=masquerade chain=srcnat out-interface=ether1
+
+
+#VLANY
+interface/vlan/add name=VL10 interface=ether2 vlan-id=10
+interface/vlan/add name=VL20 interface=ether2 vlan-id=20
+
+
+#Adres IP dla VLANów
+ip address/add interface=VL10 address=172.16.10.1/24
+ip address/add interface=VL20 address=172.16.20.1/24
+
+
+#konfiguracja dhcp
+ip pool/add name=VL10 ranges=172.16.10.10-172.16.10.100
+ip dhcp-server/network add address=172.16.10.0/24 gateway=172.16.10.1 dns-server=8.8.8.8
+ip dhcp-server/ add name=VL10 interface=VL10 address-pool=VL10
+
+ip pool/add name=VL20 ranges=172.16.20.10-172.16.20.100
+ip dhcp-server/network add address=172.16.20.0/24 gateway=172.16.20.1 dns-server=8.8.8.8
+ip dhcp-server/ add name=VL20 interface=VL20 address-pool=VL20
+
+#Blokada komunikacji między VLANami
+ip firewall/filter/add chain=forward src-address=172.16.0.0/16 dst-address=172.16.0.0/16 action=drop 
+
+
+
+
+
+
