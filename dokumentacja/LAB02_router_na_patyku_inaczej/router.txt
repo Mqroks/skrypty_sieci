@@ -1,32 +1,81 @@
 #Adres IP na zewnątrz
-ip dhcp-client/add interface=ether1
+############################################
+# KONFIGURACJA ROUTERA - MikroTik RouterOS #
+############################################
 
+# ============================================
+# 1. KONFIGURACJA ADRESU WAN
+# ============================================
+/ip/dhcp-client
+# ether1 - adres publiczny pobierany od ISP
+add interface=ether1
 
-#Maskarada
-ip firewall/nat/add action=masquerade chain=srcnat out-interface=ether1
+# ============================================
+# 2. NAT - MASKARADA DLA DOSTĘPU DO INTERNETU
+# ============================================
+/ip/firewall/nat
+# Translacja adresów dla ruchu wychodzącego przez ether1 (WAN)
+add action=masquerade chain=srcnat out-interface=ether1
 
+# ============================================
+# 3. KONFIGURACJA VLAN NA INTERFEJSIE ether2
+# ============================================
+/interface/vlan
+# VLAN 10 - pierwsza sieć logiczna
+add name=VL10 interface=ether2 vlan-id=10
+# VLAN 20 - druga sieć logiczna
+add name=VL20 interface=ether2 vlan-id=20
 
-#VLANY
-interface/vlan/add name=VL10 interface=ether2 vlan-id=10
-interface/vlan/add name=VL20 interface=ether2 vlan-id=20
+# ============================================
+# 4. KONFIGURACJA ADRESÓW IP DLA VLANÓW
+# ============================================
+/ip/address
+# Adres bramy dla VLAN 10
+add interface=VL10 address=172.16.10.1/24
+# Adres bramy dla VLAN 20
+add interface=VL20 address=172.16.20.1/24
 
+# ============================================
+# 5. KONFIGURACJA DHCP DLA VLAN 10
+# ============================================
+/ip/pool
+# Pula adresów dla klientów VLAN 10
+add name=VL10 ranges=172.16.10.10-172.16.10.100
 
-#Adres IP dla VLANów
-ip address/add interface=VL10 address=172.16.10.1/24
-ip address/add interface=VL20 address=172.16.20.1/24
+/ip/dhcp-server/network
+# Parametry sieci DHCP dla VLAN 10
+add address=172.16.10.0/24 gateway=172.16.10.1 dns-server=8.8.8.8
 
+/ip/dhcp-server
+# Uruchomienie serwera DHCP na interfejsie VL10
+add name=VL10 interface=VL10 address-pool=VL10
 
-#konfiguracja dhcp
-ip pool/add name=VL10 ranges=172.16.10.10-172.16.10.100
-ip dhcp-server/network add address=172.16.10.0/24 gateway=172.16.10.1 dns-server=8.8.8.8
-ip dhcp-server/ add name=VL10 interface=VL10 address-pool=VL10
+# ============================================
+# 6. KONFIGURACJA DHCP DLA VLAN 20
+# ============================================
+/ip/pool
+# Pula adresów dla klientów VLAN 20
+add name=VL20 ranges=172.16.20.10-172.16.20.100
 
-ip pool/add name=VL20 ranges=172.16.20.10-172.16.20.100
-ip dhcp-server/network add address=172.16.20.0/24 gateway=172.16.20.1 dns-server=8.8.8.8
-ip dhcp-server/ add name=VL20 interface=VL20 address-pool=VL20
+/ip/dhcp-server/network
+# Parametry sieci DHCP dla VLAN 20
+add address=172.16.20.0/24 gateway=172.16.20.1 dns-server=8.8.8.8
 
-#Blokada komunikacji między VLANami
-ip firewall/filter/add chain=forward src-address=172.16.0.0/16 dst-address=172.16.0.0/16 action=drop 
+/ip/dhcp-server
+# Uruchomienie serwera DHCP na interfejsie VL20
+add name=VL20 interface=VL20 address-pool=VL20
+
+# ============================================
+# 7. FIREWALL - BLOKADA KOMUNIKACJI MIĘDZY VLANAMI
+# ============================================
+/ip/firewall/filter
+# Blokada ruchu między wszystkimi podsieciami 172.16.0.0/16
+add chain=forward src-address=172.16.0.0/16 dst-address=172.16.0.0/16 action=drop
+
+############################################
+# KONIEC KONFIGURACJI                     #
+############################################
+
 
 
 
